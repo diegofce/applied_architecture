@@ -98,6 +98,20 @@ vercel --prod
 - runtime Python para `api/index.py`
 - rewrites para `/api/*` y SPA
 
+## Deploy en Railway (backend)
+
+Este repo ya incluye `railway.toml` con el comando de arranque.
+
+1. Sube el repo a GitHub y crea un proyecto en Railway.
+2. En **Settings > Variables**, configura:
+   - `TASK_REPOSITORY_PROVIDER=sqlalchemy`
+   - `DATABASE_URL=<postgres_url_con_ssl>`
+3. En **Deployments**, ejecuta el primer deploy.
+
+Notas:
+- El backend expone `/api/health`.
+- El comando de arranque es `uvicorn api.index:app --host 0.0.0.0 --port $PORT`.
+
 ## API
 
 - `GET /api/health`
