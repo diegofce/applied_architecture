@@ -1,0 +1,85 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+.envrc
+.env.*
+!.env.example
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vercel
+.vercel/
+.vercel_build_output/
+
+# Secrets / credentials
+secrets/
+secret/
+credentials/
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_rsa.pub
+*.ovpn
+.npmrc
+.pypirc
+*.kubeconfig
+*.tfvars
+*.tfvars.json
+
+# Local database / runtime files
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+tasks.db
+*.sql
+*.sql.gz
+*.log
+
+# TypeScript incremental build info
+*.tsbuildinfo
