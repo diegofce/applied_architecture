@@ -1,101 +1,105 @@
-# FullStack To-Do Monolito (Python + React)
+# Applied Architecture - FullStack To-Do Monolith
 
-Arquitectura enfocada en clases abstractas, SOLID y patrones de diseno.
+Aplicacion Full Stack de gestion de tareas con enfoque en arquitectura de software en Python.
 
-## Estructura
+Stack:
+- Backend: FastAPI (Python)
+- Frontend: React + Vite
+- Persistencia: SQLAlchemy + PostgreSQL (Neon/Supabase/RDS) o SQLite local
+- Deploy: Vercel (frontend + serverless Python API)
 
-- `api/index.py`: FastAPI entrypoint para Vercel
-- `backend/src/todo_app/domain`: entidades y contratos abstractos
-- `backend/src/todo_app/application`: casos de uso
-- `backend/src/todo_app/infrastructure`: implementaciones concretas
-- `frontend`: React + Vite
+## Objetivo tecnico
 
-## Patrones y SOLID aplicados
+Este proyecto prioriza calidad de diseno sobre complejidad funcional:
+- separacion por capas
+- contratos abstractos
+- principios SOLID
+- patrones de diseno aplicados en codigo real
 
-- Repository Pattern: `TaskRepository` + `SqlAlchemyTaskRepository` / `InMemoryTaskRepository`
+## Arquitectura
+
+Estructura principal:
+- `api/index.py`: entrypoint ASGI para Vercel
+- `backend/src/todo_app/domain`: entidades y contratos del dominio
+- `backend/src/todo_app/application`: casos de uso y servicios de aplicacion
+- `backend/src/todo_app/infrastructure`: implementaciones concretas (DB, factories, repositorios)
+- `frontend/`: cliente React
+
+Patrones implementados:
+- Repository Pattern: `TaskRepository` + implementaciones (`SqlAlchemyTaskRepository`, `InMemoryTaskRepository`)
 - Strategy Pattern: `TaskCommandValidator` + `BasicTaskCommandValidator`
 - Abstract Factory: `ServiceFactory` + `DefaultServiceFactory`
-- DIP/SRP en `DefaultTaskService`
-- Entidad de dominio inmutable `Task`
+- Dependency Inversion: `DefaultTaskService` depende de abstracciones, no de detalles
 
 ## Variables de entorno
 
 - `TASK_REPOSITORY_PROVIDER`: `sqlalchemy` (default) o `memory`
-- `DATABASE_URL`: por defecto `sqlite:///./tasks.db`
+- `DATABASE_URL`:
+  - local default: `sqlite:///./tasks.db`
+  - produccion (PostgreSQL): `postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require`
 
-Para PostgreSQL (local o Vercel), usa por ejemplo:
+Notas:
+- Si la URL viene como `postgres://...`, se normaliza automaticamente.
+- En Vercel, si `TASK_REPOSITORY_PROVIDER=sqlalchemy` y falta `DATABASE_URL`, el backend falla intencionalmente para evitar datos efimeros.
 
-`DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`
+## Ejecucion local
 
-Tambien soporta URL estilo `postgres://...` y se normaliza automaticamente.
-
-## Requisitos
-
+Requisitos:
 - Python 3.11+
 - Node.js 20+
 - npm
 
-## Ejecucion local
-
 ### 1) Backend
 
-PowerShell en raiz:
+En PowerShell (raiz del proyecto):
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-$env:PYTHONPATH = "backend/src"
-# Recomendado: SQLite local
-$env:TASK_REPOSITORY_PROVIDER = "sqlalchemy"
-# Opcional: para Postgres local/remoto
-# $env:DATABASE_URL = "postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME"
+python -m pip install -r requirements.txt
+$env:PYTHONPATH="backend/src"
+$env:TASK_REPOSITORY_PROVIDER="sqlalchemy"
+$env:DATABASE_URL="sqlite:///./tasks.db"
 python -m uvicorn api.index:app --reload --port 8000
 ```
 
-API en `http://localhost:8000/api/tasks`.
+Backend disponible en:
+- `http://localhost:8000/api/health`
+- `http://localhost:8000/api/tasks`
 
 ### 2) Frontend
 
-Otra terminal:
+En otra terminal (raiz del proyecto):
 
 ```powershell
 cmd /c npm install --prefix frontend
 cmd /c npm run dev --prefix frontend
 ```
 
-Frontend en `http://localhost:5173`.
-
-### Troubleshooting backend local
-
-- Si `uvicorn` no se reconoce, usa siempre `python -m uvicorn ...`.
-- Si falla `npm` en PowerShell por policy, usa `cmd /c npm ...`.
-- Verifica backend con:
-```powershell
-Invoke-RestMethod http://localhost:8000/api/health
-```
-- Verifica CRUD rapido:
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8000/api/tasks -ContentType application/json -Body '{"title":"test"}'
-Invoke-RestMethod http://localhost:8000/api/tasks
-```
+Frontend disponible en:
+- `http://localhost:5173`
 
 ## Deploy en Vercel
 
 1. Sube este proyecto a GitHub.
-2. En Vercel, importa el repo.
-3. En Variables de Entorno del proyecto agrega:
+2. Importa el repo en Vercel.
+3. Configura variables de entorno del proyecto:
    - `TASK_REPOSITORY_PROVIDER=sqlalchemy`
-   - `DATABASE_URL=<tu_url_postgresql>` (Neon/Supabase/RDS)
-4. Deploy.
+   - `DATABASE_URL=<postgres_url_con_ssl>`
+4. Ejecuta deploy.
 
-`vercel.json` ya define:
-- build frontend con Vite
+Opcional por CLI:
+
+```bash
+vercel login
+vercel
+vercel --prod
+```
+
+`vercel.json` ya incluye:
+- build de frontend Vite
 - runtime Python para `api/index.py`
 - rewrites para `/api/*` y SPA
-- Si `DATABASE_URL` no esta en Vercel y usas `sqlalchemy`, el backend fallara intencionalmente al iniciar.
 
-## Endpoints
+## API
 
 - `GET /api/health`
 - `GET /api/tasks`
@@ -106,23 +110,23 @@ Invoke-RestMethod http://localhost:8000/api/tasks
 
 ## Checklist de validacion
 
-### Antes de desplegar
+Pre-deploy:
+- `python -m pip install -r requirements.txt` OK
+- `cmd /c npm install --prefix frontend` OK
+- `python -m uvicorn api.index:app --reload --port 8000` responde `200` en `/api/health`
+- `cmd /c npm run build --prefix frontend` termina en `built`
+- CRUD local retorna 200/204
 
-- `python -m pip install -r requirements.txt` sin errores.
-- `cmd /c npm install --prefix frontend` sin errores.
-- `python -m uvicorn api.index:app --reload --port 8000` responde en `/api/health`.
-- `cmd /c npm run build --prefix frontend` termina en `built`.
-- CRUD local responde 200/204.
+Post-deploy:
+- `GET https://<dominio>/api/health` -> `{"status":"ok"}`
+- crear tarea desde UI
+- recargar y confirmar persistencia (DB remota conectada)
 
-### Variables en Vercel
+## Roadmap tecnico
 
-- `TASK_REPOSITORY_PROVIDER=sqlalchemy`.
-- `DATABASE_URL` de Postgres valida y accesible.
-- Base de datos con SSL habilitado (`sslmode=require` si el proveedor lo exige).
-
-### Despues de desplegar
-
-- `GET https://<tu-dominio>/api/health` retorna `{"status":"ok"}`.
-- `POST https://<tu-dominio>/api/tasks` crea registro.
-- `GET https://<tu-dominio>/api/tasks` devuelve la tarea creada.
-- Recarga pagina y confirma persistencia (si persiste, DB remota esta correcta).
+- Autenticacion JWT + autorizacion por usuario
+- CORS estricto por entorno
+- Rate limiting
+- Logging estructurado y trazabilidad
+- Tests unitarios/integracion + CI (GitHub Actions)
+- Migraciones con Alembic
