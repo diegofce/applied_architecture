@@ -54,10 +54,9 @@ Requisitos:
 En PowerShell (raiz del proyecto):
 
 ```powershell
+Copy-Item .env.example .env
 python -m pip install -r requirements.txt
 $env:PYTHONPATH="backend/src"
-$env:TASK_REPOSITORY_PROVIDER="sqlalchemy"
-$env:DATABASE_URL="sqlite:///./tasks.db"
 python -m uvicorn api.index:app --reload --port 8000
 ```
 

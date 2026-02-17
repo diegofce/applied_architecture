@@ -3,12 +3,15 @@ import sys
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 # Ensure backend package is importable in local runs and Vercel runtime.
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_SRC = CURRENT_DIR.parent / "backend" / "src"
+ROOT_DIR = CURRENT_DIR.parent
 if str(BACKEND_SRC) not in sys.path:
     sys.path.append(str(BACKEND_SRC))
+load_dotenv(ROOT_DIR / ".env")
 
 from todo_app.application.interfaces.validators import CreateTaskCommand, UpdateTaskCommand
 from todo_app.infrastructure.factories.service_factory import DefaultServiceFactory
