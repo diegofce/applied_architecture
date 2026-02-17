@@ -112,6 +112,17 @@ Notas:
 - El backend expone `/api/health`.
 - El comando de arranque es `uvicorn api.index:app --host 0.0.0.0 --port $PORT`.
 
+## Deploy en Render (backend) + Vercel (frontend)
+
+Backend (Render):
+- Build command: `python -m pip install -r requirements.txt`
+- Start command: `uvicorn api.index:app --host 0.0.0.0 --port $PORT`
+- Variables: `TASK_REPOSITORY_PROVIDER=sqlalchemy`, `DATABASE_URL=...`
+
+Frontend (Vercel):
+- Root directory: `frontend`
+- Env: `VITE_API_BASE=https://<tu-backend-render>`
+
 ## API
 
 - `GET /api/health`
